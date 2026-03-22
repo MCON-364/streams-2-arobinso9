@@ -124,7 +124,10 @@ public class StreamTaskExercises {
      * Example: "Write syllabus, Grade quizzes"
      */
     public String doneTaskSummary(List<Task> tasks) {
-        throw new UnsupportedOperationException("TODO");
+        return tasks.stream()
+                .filter(task -> task.status() == Status.DONE)
+                .map(Task::description)
+                .collect(Collectors.joining(", "));
     }
 
     /**
@@ -133,7 +136,9 @@ public class StreamTaskExercises {
      * Return all tags from all work items in encounter order.
      */
     public List<String> allTags(List<WorkItem> items) {
-        throw new UnsupportedOperationException("TODO");
+        return items.stream()
+                .flatMap(item -> item.tags().stream())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -142,7 +147,15 @@ public class StreamTaskExercises {
      * Return distinct assignees for DONE items in encounter order.
      */
     public List<String> distinctDoneAssignees(List<WorkItem> items) {
-        throw new UnsupportedOperationException("TODO");
+        return items.stream()
+                //first check if status is done for the task
+                .filter(task -> task.status() == Status.DONE)
+                // then convert the WorkItem stream into an assigness stream
+                .flatMap(item -> item.assignees().stream())
+                // .distinct() is an intermediate operation that filters out duplicate elements,
+                // ensuring that every item passing through to the next stage of the pipeline is unique.
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -151,7 +164,8 @@ public class StreamTaskExercises {
      * Build a map from work-item id to status.
      */
     public Map<String, Status> idToStatus(List<WorkItem> items) {
-        throw new UnsupportedOperationException("TODO");
+        return  items.stream()
+                .collect(Collectors.toMap(WorkItem::id, WorkItem::status));
     }
 
     /**
@@ -160,6 +174,18 @@ public class StreamTaskExercises {
      * Group by priority and collect only titles.
      */
     public Map<Priority, List<String>> titlesByPriorityUsingMapping(List<WorkItem> items) {
-        throw new UnsupportedOperationException("TODO");
+        return items.stream()
+                .collect(Collectors.groupingBy(
+                        WorkItem::priority,
+                        // Collectors.mapping allows u to transform an object (like a WorkItem) into a specific field
+                        // (like its title) right before that field gets packed into a collection.
+                        // The mapping method takes two arguments:
+                        // The Mapper (WorkItem::title): This is a function that tells Java what to extract from the object.
+                        // The Downstream Collector (Collectors.toList()): This tells Java where to put those extracted pieces.
+                        // If you use .map() at the start, you lose access to the rest of the WorkItem object.
+                        // If u need to group tasks by their Priority but only want the names in the final list,
+                        // you can't map to the name first—otherwise, the Priority information is gone :(
+                        Collectors.mapping(WorkItem::title, Collectors.toList())
+                ));
     }
 }

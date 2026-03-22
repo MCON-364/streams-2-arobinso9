@@ -129,7 +129,7 @@ public class Demo {
      */
     static Optional<Map.Entry<String, Long>> mostPopularCourse(List<Student> students) {
              return students.stream()
-                     //we get a stream of each class a student and each class they are enrolled in
+                     //we get a stream of each student and each class they are enrolled in
                     .flatMap(student -> student.enrolledCourses().stream())
                      // we get a map:  key= course, value= how many students are enrolled in the course
                     .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
