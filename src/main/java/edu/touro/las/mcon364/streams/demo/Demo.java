@@ -59,6 +59,11 @@ public class Demo {
 
     /**
      * 1b. Group students by major and collect a sorted set of their names.
+     * we use a treeSet to remove duplicates- and to sort the names.
+     * since we wanted a list of names, we need the .mapping(), bc without the .mapping we would
+     * be returning a list of students and not a list of names.
+     * return students.stream().collect(Collectors.groupingBy(Student::major, Collectors.mapping(Student::name)));
+     *
      *
      *     Collectors.groupingBy by major to group student
      *     Collectors.mapping to extract student names from each group
@@ -101,7 +106,10 @@ public class Demo {
                 .collect(Collectors.toMap(
                         Student::major,
                         s -> s.enrolledCourses().size(),
-                        Integer::sum
+                        Integer::sum  // if a second student comes along with same major as another student
+                                      // already has, then we will add onto what was previously stored
+                                      // this is a merge function. so if Abby took 3 courses in Math, and
+                                      // did Aviva, then now Math will be 6.
                 ));
     }
 
@@ -121,10 +129,15 @@ public class Demo {
      */
     static Optional<Map.Entry<String, Long>> mostPopularCourse(List<Student> students) {
              return students.stream()
+                     //we get a stream of each student and each class they are enrolled in
                     .flatMap(student -> student.enrolledCourses().stream())
+                     // we get a map:  key= course, value= how many students are enrolled in the course
                     .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                     //we take the entry set- the key and value
                     .entrySet()
+                     // make it inot a stream again
                     .stream()
+                     // and then find which course is the most popular
                     .max(Map.Entry.comparingByValue());
     }
 
